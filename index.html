@@ -1,0 +1,268 @@
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <title>Border Layout - jQuery EasyUI Demo</title>
+        <link rel="stylesheet" type="text/css" href="themes/default/easyui.css">
+        <link rel="stylesheet" type="text/css" href="themes/icon.css">
+        <script type="text/javascript" src="jquery-1.6.min.js"></script>
+        <script type="text/javascript" src="jquery.easyui.min.js"></script>
+        <script>
+            var grid;
+            var win;
+            var form;
+            var searchWin;
+            var searchForm;
+
+            function add() {
+                win.window('open');
+                form.form('clear');
+                form.url = 'Handler.ashx?action=save';
+            }
+
+            $(function(){
+                $('#tt2').tree({
+                    checkbox: false,
+                    url: 'tree_data.json',
+                    onClick:function(node){
+                        $(this).tree('toggle', node.target);
+                        //alert('you dbclick '+node.text);
+                    },
+                    onContextMenu: function(e, node){
+                        e.preventDefault();
+                        $('#tt2').tree('select', node.target);
+                        $('#mm').menu('show', {
+                            left: e.pageX,
+                            top: e.pageY
+                        });
+                    }
+                });
+            });
+            $(function(){
+                $('#btn-save,#btn-cancel').linkbutton();
+                win = $('#eidt-window').window({
+                    closed: true,
+                    modal: true,
+                    shadow: false
+                });
+                form = win.find('form');
+
+                $('#btn-search,#btn-search-cancel').linkbutton();
+                searchWin = $('#search-window').window({
+                    closed: true,
+                    modal: true
+                });
+                searchForm = searchWin.find('form');
+                grid = $('#test').datagrid({
+                    nowrap: false,
+                    striped: true,
+                    collapsible:true,
+                    url:'datagrid_data.json',
+                    sortName: 'code',
+                    sortOrder: 'desc',
+                    remoteSort: false,
+                    idField:'code',
+                    frozenColumns:[[
+                    {field:'ck',checkbox:true},
+                    {title:'code',field:'code',width:80,sortable:true}
+                    ]],
+                    columns:[[
+                    {title:'Base Information',colspan:3},
+                    {field:'opt',title:'Operation',width:100,align:'center', rowspan:2,
+                        formatter:function(value,rec){
+                            return '<span style="color:red">Edit Delete</span>';
+                        }
+                    }
+                    ],[
+                    {field:'name',title:'Name',width:120},
+                    {field:'addr',title:'Address',width:220,rowspan:2,sortable:true,
+                        sorter:function(a,b){
+                            return (a>b?1:-1);
+                        }
+                    },
+                    {field:'col4',title:'Col41',width:150,rowspan:2}
+                    ]],
+                    pagination:true,
+                    rownumbers:true,
+                    toolbar: [{
+                        text: '新增',
+                        iconCls: 'icon-add',
+                        handler: add
+                        }, '-', {
+                        text: '修改',
+                        iconCls: 'icon-edit',
+                        }, '-', {
+                        text: '删除',
+                        iconCls: 'icon-remove',
+                        }, '-', {
+                        text: '查找',
+                        iconCls: 'icon-search',
+                        }, '-', {
+                        text: '所有',
+                        iconCls: 'icon-search',
+                    }]
+                });
+                var p = $('#test').datagrid('getPager');
+                $(p).pagination({
+                    onBeforeRefresh:function(){
+                        alert('before refresh');
+                    }
+                });
+            });
+            function reload(){
+                var node = $('#tt2').tree('getSelected');
+                if (node){
+                    $('#tt2').tree('reload', node.target);
+                    } else {
+                    $('#tt2').tree('reload');
+                }
+            }
+            function getChildren(){
+                var node = $('#tt2').tree('getSelected');
+                if (node){
+                    var children = $('#tt2').tree('getChildren', node.target);
+                    } else {
+                    var children = $('#tt2').tree('getChildren');
+                }
+                var s = '';
+                for(var i=0; i<children.length; i++){
+                    s += children[i].text + ',';
+                }
+                alert(s);
+            }
+            function getChecked(){
+                var nodes = $('#tt2').tree('getChecked');
+                var s = '';
+                for(var i=0; i<nodes.length; i++){
+                    if (s != '') s += ',';
+                    s += nodes[i].text;
+                }
+                alert(s);
+            }
+            function getSelected(){
+                var node = $('#tt2').tree('getSelected');
+                alert(node.text);
+            }
+            function collapse(){
+                var node = $('#tt2').tree('getSelected');
+                $('#tt2').tree('collapse',node.target);
+            }
+            function expand(){
+                var node = $('#tt2').tree('getSelected');
+                $('#tt2').tree('expand',node.target);
+            }
+            function collapseAll(){
+                var node = $('#tt2').tree('getSelected');
+                if (node){
+                    $('#tt2').tree('collapseAll', node.target);
+                    } else {
+                    $('#tt2').tree('collapseAll');
+                }
+            }
+            function expandAll(){
+                var node = $('#tt2').tree('getSelected');
+                if (node){
+                    $('#tt2').tree('expandAll', node.target);
+                    } else {
+                    $('#tt2').tree('expandAll');
+                }
+            }
+            function append(){
+                var node = $('#tt2').tree('getSelected');
+                $('#tt2').tree('append',{
+                    parent: (node?node.target:null),
+                    data:[{
+                        text:'new1',
+                        checked:true
+                        },{
+                        text:'new2',
+                        state:'closed',
+                        children:[{
+                            text:'subnew1'
+                            },{
+                            text:'subnew2'
+                        }]
+                    }]
+                });
+            }
+            function remove(){
+                var node = $('#tt2').tree('getSelected');
+                $('#tt2').tree('remove', node.target);
+            }
+            function update(){
+                var node = $('#tt2').tree('getSelected');
+                if (node){
+                    node.text = '<span style="font-weight:bold">new text</span>';
+                    node.iconCls = 'icon-save';
+                    $('#tt2').tree('update', node);
+                }
+            }
+            function isLeaf(){
+                var node = $('#tt2').tree('getSelected');
+                var b = $('#tt2').tree('isLeaf', node.target);
+                alert(b)
+            }
+        </script>
+    </head>
+    <body class="easyui-layout">
+        <div region="north" border="false" style="height:60px;background:#B3DFDA;">north region</div>
+        <div region="west" split="true" title="West" style="width:200px;padding:10px;">
+            <a href="#" onclick="reload()">reload</a>
+            <a href="#" onclick="getSelected()">getSelected</a>
+            <a href="#" onclick="update()">update</a>
+            <ul id="tt2"></ul>
+            <div id="mm" class="easyui-menu" style="width:120px;">
+                <div onclick="append()" iconCls="icon-add">Append</div>
+                <div onclick="remove()" iconCls="icon-remove">Remove</div>
+                <div class="menu-sep"></div>
+                <div onclick="expand()">Expand</div>
+                <div onclick="collapse()">Collapse</div>
+            </div>
+        </div>
+        <!--div region="east" split="true" title="East" style="width:100px;padding:10px;">east region</div-->
+        <div region="south" border="false" style="height:50px;background:#A9FACD;padding:10px;">south region</div>
+        <div region="center" title="Main Title">
+            <table id="test" fit="true"></table>
+        </div>
+        <div id="eidt-window" title="编辑窗口" style="width: 350px; height: 200px;">
+            <div style="padding: 20px 20px 40px 80px;">
+                <form method="post">
+                    <table>
+                        <tr>
+                            <td>
+                                名称：
+                            </td>
+                            <td>
+                                <input name="title" style="width: 150px;" />
+                            </td>
+                        </tr>
+                    </table>
+                </form>
+            </div>
+            <div style="text-align: center; padding: 5px;">
+                <a href="javascript:void(0)" onclick="saveData()" id="btn-save" icon="icon-save">保存</a>
+                <a href="javascript:void(0)" onclick="closeWindow()" id="btn-cancel" icon="icon-cancel">取消</a>
+            </div>
+        </div>
+
+        <div id="search-window" title="查询窗口" style="width: 350px; height: 200px;">
+            <div style="padding: 20px 20px 40px 80px;">
+                <form method="post">
+                    <table>
+                        <tr>
+                            <td>
+                                名称：
+                            </td>
+                            <td>
+                                <input name="s_title" id="s_title" style="width: 150px;" />
+                            </td>
+                        </tr>
+                    </table>
+                </form>
+            </div>
+            <div style="text-align: center; padding: 5px;">
+                <a href="javascript:void(0)" onclick="SearchOK()" id="btn-search" icon="icon-ok">确定</a>
+                <a href="javascript:void(0)" onclick="closeSearchWindow()" id="btn-search-cancel" icon="icon-cancel"> 取消</a>
+            </div>
+        </div>
+    </body>
+</html>
